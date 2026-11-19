@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IT2003 Flashcards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    /* 3D Card Flip Animation */
+    .perspective {
+      perspective: 1200px;
+    }
+    .card-inner {
+      transform-style: preserve-3d;
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .card-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="bg-[#f4f4f5] text-zinc-900 font-sans min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 select-none">
+
+  <main class="w-full max-w-xl flex flex-col items-center gap-4">
+    <!-- Card Counter -->
+    <div id="counter" class="text-sm font-medium text-zinc-500 tracking-wide">
+      1 / 35
+    </div>
+
+    <!-- Flashcard Stage -->
+    <div id="card-stage" class="perspective w-full cursor-pointer" role="button" tabindex="0" aria-label="Flashcard. Click or press Space to flip.">
+      <div id="card-inner" class="card-inner relative w-full h-72 sm:h-80">
+
+        <!-- Front: Question -->
+        <div class="card-face absolute inset-0 w-full h-full bg-white rounded-2xl border border-zinc-200/90 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+          <span class="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+            Question
+          </span>
+          <p id="question-text" class="text-lg sm:text-xl font-semibold text-zinc-900 text-center leading-relaxed my-auto">
+            Loading...
+          </p>
+          <span class="text-xs text-zinc-400 text-center">
+            Click or press Space to flip
+          </span>
+        </div>
+
+        <!-- Back: Answer -->
+        <div class="card-face card-back absolute inset-0 w-full h-full bg-white rounded-2xl border border-zinc-300 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+          <span class="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+            Answer
+          </span>
+          <p id="answer-text" class="text-lg sm:text-xl font-semibold text-zinc-900 text-center leading-relaxed my-auto">
+            Loading...
+          </p>
+          <span class="text-xs text-zinc-400 text-center">
+            Click or press Space to flip back
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation & Shuffle Controls -->
+    <div class="w-full flex items-center justify-center gap-3 pt-2">
+      <button id="btn-prev" type="button" class="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-50 active:scale-95 text-zinc-700 text-sm font-medium border border-zinc-200 shadow-2xs transition">
+        Previous
+      </button>
+      <button id="btn-next" type="button" class="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:scale-95 text-white text-sm font-medium shadow-2xs transition">
+        Next
+      </button>
+      <button id="btn-shuffle" type="button" class="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-50 active:scale-95 text-zinc-700 text-sm font-medium border border-zinc-200 shadow-2xs transition">
+        Shuffle
+      </button>
+    </div>
+  </main>
+
+  <script>
+    // All 35 IT2003 Flashcards
+    const CARDS = [
+      { q: "In the context of Big Data, what dimension refers to the total volume or quantity of data to be stored?", a: "Volume" },
+      { q: "Which Big Data dimension represents the vast array of different formats and structures in which data can be captured?", a: "Variety" },
+      { q: "In Big Data, what term describes the rate or speed at which new data enters the system?", a: "Velocity" },
+      { q: "Which dimension of Big Data refers to the rate at which data must be actively processed?", a: "Velocity" },
+      { q: 'What does the letter "V" stand for when referring to "KV storage" in NoSQL databases?', a: "Value" },
+      { q: "Which NoSQL database model represents data through nodes, edges, and properties?", a: "Graph database" },
+      { q: "Within a NoSQL database context, what serves as a unique identifier for a specific value?", a: "Key" },
+      { q: "A company needs a database to track highly interrelated social data like users, reactions, and connections. Which NoSQL model is best suited?", a: "Graph database" },
+      { q: "A system requires handling millions of simple lookups per minute with the fastest possible performance and minimal DBMS overhead. Which NoSQL model fits best?", a: "Key-Value database" },
+      { q: "In MongoDB, what is the direct equivalent to a relational database's Table?", a: "Collection" },
+      { q: "In MongoDB, what is the equivalent to a relational database's Row?", a: "Document" },
+      { q: "In MongoDB, what is the equivalent to a relational database's Column?", a: "Field" },
+      { q: "In SQL databases, what is the structural equivalent of MongoDB Collections?", a: "Tables" },
+      { q: "In SQL databases, what is the structural equivalent of MongoDB Documents?", a: "Rows" },
+      { q: "In SQL databases, what is the structural equivalent of MongoDB Fields?", a: "Columns" },
+      { q: "What is defined by SQL standards as the database objects that users can manipulate?", a: "Objects" },
+      { q: "What is defined by SQL standards as the people or programs performing actions on database objects?", a: "Users" },
+      { q: "What term refers specifically to the rights given to users allowing them to manipulate database objects?", a: "Privileges" },
+      { q: "Who is the person responsible for maintaining a successful database environment by directing or performing all related activities to keep data secure?", a: "Data Administrator (or Database Administrator)" },
+      { q: "What is a management-oriented role that concerns controlling overall corporate data resources, both computerized and manual?", a: "Data Administrator" },
+      { q: "Which choice describes the Roles component of SQL security?", a: "It is a named collection of database access privileges that authorize a user to connect to the database and use its system resources." },
+      { q: "Which of the following is NOT a standard characteristic or duty of a Database Administrator?", a: "Builds logical design" },
+      { q: "What best describes the Owner database role?", a: "It can modify the role membership for custom roles only and manage permissions." },
+      { q: "Which SQL command is used to provide access or privileges on database objects to users?", a: "GRANT" },
+      { q: "Which SQL command is used to remove privileges from a specific user?", a: "REVOKE" },
+      { q: "A DBA enforces standards, performs backups, and supports end-users. Which DBA role orientation best reflects these tasks?", a: "Managerial" },
+      { q: "An IT director wants to ensure consistent naming rules, uniform abbreviation standards, and enterprise-wide data policies before physical implementation. Which role is responsible?", a: "Data Administrator" },
+      { q: "What is a mechanism where all previous logs are removed from the system and stored permanently in a storage disk?", a: "Checkpoint" },
+      { q: "What action restores a database from a given state (usually inconsistent) back to a previous consistent state?", a: "Recovery" },
+      { q: "What is the primary purpose of a transaction log?", a: "It is used to keep track of all transactions that update the database." },
+      { q: "After a power failure, the database is inconsistent, but no physical files were destroyed. Which action must be performed to restore a stable state?", a: "Apply rollback and redo as needed." },
+      { q: 'What does "convenient and safe backup storage" mean?', a: "Multiple backups of the same data are required, and each backup copy must be saved in a different location." },
+      { q: "These incidents indicate that the company data is at serious risk:", a: "Intentional events" },
+      { q: "Which best describes the write-through technique?", a: "In this technique, the database is immediately updated by transaction operations during the transaction's execution, even before the transaction reaches its commit point." },
+      { q: "Which best describes a deferred update technique?", a: "In this technique, the transaction operations do not immediately update the physical database but update the transaction log." }
+    ];
+
+    let deck = [...CARDS];
+    let currentIndex = 0;
+    let isFlipped = false;
+
+    const counterEl = document.getElementById("counter");
+    const cardStage = document.getElementById("card-stage");
+    const cardInner = document.getElementById("card-inner");
+    const questionText = document.getElementById("question-text");
+    const answerText = document.getElementById("answer-text");
+    const btnPrev = document.getElementById("btn-prev");
+    const btnNext = document.getElementById("btn-next");
+    const btnShuffle = document.getElementById("btn-shuffle");
+
+    function render() {
+      const current = deck[currentIndex];
+      counterEl.textContent = `${currentIndex + 1} / ${deck.length}`;
+      questionText.textContent = current.q;
+      answerText.textContent = current.a;
+      cardInner.classList.toggle("is-flipped", isFlipped);
+    }
+
+    function flipCard() {
+      isFlipped = !isFlipped;
+      cardInner.classList.toggle("is-flipped", isFlipped);
+    }
+
+    function nextCard() {
+      isFlipped = false;
+      currentIndex = (currentIndex + 1) % deck.length;
+      render();
+    }
+
+    function prevCard() {
+      isFlipped = false;
+      currentIndex = (currentIndex - 1 + deck.length) % deck.length;
+      render();
+    }
+
+    function shuffleDeck() {
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      currentIndex = 0;
+      isFlipped = false;
+      render();
+    }
+
+    // Event Listeners
+    cardStage.addEventListener("click", flipCard);
+    btnPrev.addEventListener("click", prevCard);
+    btnNext.addEventListener("click", nextCard);
+    btnShuffle.addEventListener("click", shuffleDeck);
+
+    // Keyboard Support (Space to flip, Left/Right arrows to navigate)
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        flipCard();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        nextCard();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevCard();
+      }
+    });
+
+    // Touch Swipe Support
+    let touchStartX = 0;
+    cardStage.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    cardStage.addEventListener("touchend", (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 50) {
+        diff < 0 ? nextCard() : prevCard();
+      }
+    }, { passive: true });
+
+    render();
+  </script>
+</body>
+</html>
